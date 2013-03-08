@@ -1,8 +1,8 @@
 require 'optparse'
-require 'stage3.rb'
-require 'shadow.rb'
+require './stage3.rb'
+require './shadow.rb'
 require 'erb'
-require 'devices.rb'
+require './devices.rb'
 
 #name: get stage3 tarball
 TEMPLATE_PATH = './templates'
