@@ -1,0 +1,11 @@
+<% Configuration.instance.get(:networks).each_pair do |interface, config| %>
+config_<%= interface %>="<%=config%>"
+<% end %>
+
+<% Configuration.instance.get(:routes).each_pair do |interface, routes| %>
+routes_<%= interface %>="
+  <% routes.each_pair do |destination,gateway| %>
+<%= destination %> via "<%=gateway%>"
+<% end %>
+"
+<% end %>

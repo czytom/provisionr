@@ -1,0 +1,17 @@
+# Boot automatically after 30 secs.
+timeout 3
+
+# By default, boot the first entry.
+default 0
+
+# Fallback to the second entry.
+#fallback 1
+
+# Splash image to show behind grub.
+#splashimage=(hd0,0)/boot/grub/splash.xpm.gz
+
+# For booting GNU/Linux
+title  GNU/Linux
+root (hd0,0)
+kernel /boot/vmlinuz root=<%= Devices.instance.get_mounts['/'][:vm_partition] %>
+
