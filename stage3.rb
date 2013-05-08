@@ -6,48 +6,52 @@ require 'digest'
 class Stage3
   include Singleton
 
-  STAGE_DIR = '/var/stages'
-  @@arch = 'amd64'
-  @@ftp_mirror = 'de-mirror.org'
-  @@ftp_port = 21
-  @@downloaded = false
-  @@ftp_passive = true
-  @@verbose = true
-  @@test_only = false
-  @@ftp_url = "gentoo/releases/#{@@arch}/current-stage3/"
+  def initialize
+    @local_stage3_dir = '/tmp'
+    @ftp_mirror = 'de-mirror.org'
+    @ftp_port = 21
+    @downloaded = false
+    @ftp_passive = true
+    @verbose = true
+    @test_only = false
+    @profile_type = 'default'
 
-  def self.ftp_url
-    @@ftp_url
   end
 
-  def initialize
-    @@ftp = Net::FTP.new
-    puts "connecting to #{@@ftp_mirror}" if verbose?
-    @@ftp.connect(@@ftp_mirror, @@ftp_port)
-    @@ftp.login
-    @@ftp.chdir @@ftp_url
-    @@ftp.passive = @@ftp_passive
+  def ftp_connect
+    @ftp_url = "gentoo/releases/#{@arch}/current-stage3/"
+    @ftp = Net::FTP.new
+    puts "connecting to #{@ftp_mirror}" if verbose?
+    @ftp.connect(@ftp_mirror, @ftp_port)
+    @ftp.login
+    @ftp.chdir @ftp_url
+    @ftp.passive = @ftp_passive
 
-    dir = @@ftp.getdir
-    @@date = dir.split('/').last
+    dir = @ftp.getdir
+    @date = dir.split('/').last
   end
 
   def fetch_digest
-    @@ftp.get stage3_file + '.DIGESTS'
+    
+    puts @ftp_mirror + @ftp_url + stage3_file
+    puts stage3_dir
+    @ftp.chdir stage3_dir
+    @ftp.get stage3_file + '.DIGESTS', @local_stage3_dir + '/' + stage3_file + '.DIGESTS'
+#    @ftp.get stage3_file + '.DIGESTS'
   end
 
   #TODO get right checksum from file
   def check_digest
     puts "matching digest" if verbose?
-    puts digest_get = IO.readlines("#{stage3_file}.DIGESTS")[1].split.first
-    puts digest_count = Digest::SHA512.file(stage3_file).hexdigest
+    puts digest_get = IO.readlines("#{@local_stage3_dir}/#{stage3_file}.DIGESTS")[1].split.first
+    puts digest_count = Digest::SHA512.file(stage3_file_path).hexdigest
 
     raise "digest not match"  unless digest_count == digest_get
     puts "digest match" if verbose?
   end
 
   def downloaded?
-    if File.exist?(stage3_file)
+    if File.exist?(stage3_file_path)
       puts "File #{stage3_file} downloaded" if verbose?
       return true
     else
@@ -56,33 +60,54 @@ class Stage3
     end
   end
 
+  def stage3_dir
+    "/#{@ftp_url}#{@profile_type}/#{@date}"
+  end
+
+  def stage3_file_path
+    "#{@local_stage3_dir}/#{stage3_file}"
+  end
+
   def stage3_file
-    "stage3-#{@@arch}-#{@@date}.tar.bz2"
+    "stage3-#{@model}-#{@date}.tar.bz2"
   end
 
   def fetch_stage3
-    @@ftp.get stage3_file
+    @ftp.chdir stage3_dir
+    @ftp.get stage3_file, @local_stage3_dir + '/' + stage3_file
     puts "getting #{stage3_file}" if verbose?
     puts "done" if verbose?
   end
 
   def fetch_and_unpack(destination)
+    ftp_connect
     fetch_digest
     fetch_stage3 unless downloaded?
     check_digest
     unpack(destination)
   end
 
+  def set_arch(arch)
+    @arch = arch
+    case @arch
+      when  'x86'
+        @model = 'i686'
+      when 'amd64'
+        @model = 'amd64'
+    end
+
+  end
+
   def unpack(dest_dir)
     puts  "unpacking stage3" if verbose?
     if dest_dir.match(/^\/mnt.*/)
-      system("tar -xjpvf #{stage3_file} -C  #{dest_dir}")
+      system("tar -xjpvf #{stage3_file_path} -C  #{dest_dir}")
     else
       puts 'chroot_dir have to begins with /mnt'
     end
   end
   
   def verbose?
-    @@verbose
+    @verbose
   end
 end

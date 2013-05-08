@@ -59,6 +59,11 @@ class Configuration
         @options[:nameserver] = l
       end
 
+      @options[:arch] = 'x86'
+      opts.on( '-a', '--arch String', :required,  "Configure host architecture default x86" ) do |l|
+          @options[:arch] = l
+      end
+
       @options[:xen] = {}
       opts.on( '-X', '--xen String', :required,  "Configure host under Xen" ) do |l|
 	l.split(',').each do |i|
@@ -113,6 +118,7 @@ end
 #  - name: unpack stage3 tarball
 #p Devices.instance.get_mounts.sort_by{|l| l.length}
 #exit
+Stage3.instance.set_arch(Configuration.instance.get(:arch))
 Stage3.instance.fetch_and_unpack(Configuration.instance.get(:chroot_dir))
 
 
@@ -179,7 +185,7 @@ render({:file => "/boot/grub/grub.conf"})
 #TODO absolute path- 
 system("cp ./scripts/kernel_compile.sh #{Configuration.instance.get(:chroot_dir)}")
 #TODO - get correct config
-system("cp ./config/kernel-xen #{Configuration.instance.get(:chroot_dir)}/usr/src/linux/.config")
+system("cp ./config/kernel-xen-#{Configuration.instance.get(:arch)} #{Configuration.instance.get(:chroot_dir)}/usr/src/linux/.config")
 
 system("chroot #{Configuration.instance.get(:chroot_dir)} /kernel_compile.sh")
 #TODO - remove correct script
