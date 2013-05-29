@@ -61,7 +61,7 @@ class Stage3
   end
 
   def stage3_dir
-    "/#{@ftp_url}#{@profile_type}/#{@date}"
+    "/#{@ftp_url}"
   end
 
   def stage3_file_path
