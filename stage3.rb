@@ -42,11 +42,14 @@ class Stage3
 
   #TODO get right checksum from file
   def check_digest
-    puts "matching digest" if verbose?
-    puts digest_get = IO.readlines("#{@local_stage3_dir}/#{stage3_file}.DIGESTS")[1].split.first
+    puts "checking digests" if verbose?
+    puts digest_get = IO.readlines(stage3_digest_file_path)[1].split.first
     puts digest_count = Digest::SHA512.file(stage3_file_path).hexdigest
 
-    raise "digest not match"  unless digest_count == digest_get
+    unless digest_count == digest_get
+      puts "Digests not match. Please remove file #{stage3_file_path} and try again"  unless digest_count == digest_get
+      exit
+    end
     puts "digest match" if verbose?
   end
 
@@ -62,6 +65,10 @@ class Stage3
 
   def stage3_dir
     "/#{@ftp_url}"
+  end
+
+  def stage3_digest_file_path
+    "#{@local_stage3_dir}/#{stage3_file}.DIGESTS"
   end
 
   def stage3_file_path
