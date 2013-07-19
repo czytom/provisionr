@@ -1,4 +1,4 @@
-<% Devices.instance.get_mounts.each_pair do |mount,params| %>
-<%= params[:vm_partition] %>	<%= mount %>	<%= params[:type] %>	rw,noatime	0 <%= params[:fs_passno]%>
+<% Devices.instance.get_mounts.each do |mount| %>
+<%= mount[:vm_partition] %>	<%= mount[:chroot_mount_point] %>	<%= mount[:type] %>	rw,noatime	0 <%= mount[:fs_passno]%>
 
 <% end %>

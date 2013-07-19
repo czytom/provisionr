@@ -6,10 +6,8 @@ name   = "<%= Configuration.instance.get(:hostname) %>"
 
 extra = 'xencons=hvc'
 <% disks = [] %>
-<% Devices.instance.get_mounts.sort_by {|l| l.length}.each do |options| %>
-<% mount = options[0] %>
-<% params = options[1] %>
-<% disks  <<  "\'phy:#{params[:device]},#{params[:vm_partition].split('/')[-1]},w\'" %>
+<% Devices.instance.get_mounts.each do |mount| %>
+<% disks  <<  "\'phy:#{mount[:device]},#{mount[:vm_partition].split('/')[-1]},w\'" %>
 <% end %>
 disk   = [ <%= disks.join(',') %> ]
 

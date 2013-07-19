@@ -21,6 +21,11 @@ class Configuration
         @options[:verbose] = true
       end
 
+      @options[:puppet] = false
+      opts.on( '-p', '--with_puppet', 'Install puppet package' ) do
+        @options[:puppet] = true
+      end
+
       #TODO required options
       @options[:chroot_dir] = ''
       opts.on( '-R', '--chroot-dir String', :required,  "Chroot dir - must be under /mnt path" ) do|l|
@@ -59,7 +64,7 @@ class Configuration
         @options[:nameserver] = l
       end
 
-      @options[:arch] = 'x86'
+      @options[:arch] = 'amd64'
       opts.on( '-a', '--arch String', :required,  "Configure host architecture default x86" ) do |l|
           @options[:arch] = l
       end
@@ -174,6 +179,12 @@ system("chroot #{Configuration.instance.get(:chroot_dir)} emerge --sync")
 system("chroot #{Configuration.instance.get(:chroot_dir)} eselect profile set 1")
 
 system("chroot #{Configuration.instance.get(:chroot_dir)} emerge -u gentoo-sources")
+#OPTIONAL - PUPPET
+if Configuration.instance.get(:puppet) then
+  command = "echo \'=sys-apps/net-tools-1.60_p20120127084908 old-output\' \>\> " + Configuration.instance.get(:chroot_dir) + "/etc/portage/package.use"
+  system(command)
+  system("chroot #{Configuration.instance.get(:chroot_dir)} emerge -u puppet")
+end
 
 # #grub config
 #TODO install grub if physical machine

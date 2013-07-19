@@ -13,5 +13,5 @@ default 0
 # For booting GNU/Linux
 title  GNU/Linux
 root (hd0,0)
-kernel /boot/vmlinuz root=<%= Devices.instance.get_mounts['/'][:vm_partition] %>
+kernel /boot/vmlinuz root=<%= Devices.instance.get_mounts[0][:vm_partition] %>
 
